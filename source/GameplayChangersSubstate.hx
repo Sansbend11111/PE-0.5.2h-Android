@@ -8,7 +8,6 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
@@ -40,23 +39,12 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 	function getOptions()
 	{
-		var goption:GameplayOption = new GameplayOption('Scroll Type', 'scrolltype', 'string', 'multiplicative', ["multiplicative", "constant"]);
-		optionsArray.push(goption);
-
 		var option:GameplayOption = new GameplayOption('Scroll Speed', 'scrollspeed', 'float', 1);
 		option.scrollSpeed = 1.5;
 		option.minValue = 0.5;
+		option.maxValue = 3;
 		option.changeValue = 0.1;
-		if (goption.getValue() != "constant")
-		{
-			option.displayFormat = '%vX';
-			option.maxValue = 3;
-		}
-		else
-		{
-			option.displayFormat = "%v";
-			option.maxValue = 6;
-		}
+		option.displayFormat = '%vX';
 		optionsArray.push(option);
 
 		/*var option:GameplayOption = new GameplayOption('Playback Rate', 'songspeed', 'float', 1);
@@ -91,17 +79,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		var option:GameplayOption = new GameplayOption('Botplay', 'botplay', 'bool', false);
 		optionsArray.push(option);
-	}
-
-	public function getOptionByName(name:String)
-	{
-		for(i in optionsArray)
-		{
-			var opt:GameplayOption = i;
-			if (opt.name == name)
-				return opt;
-		}
-		return null;
 	}
 
 	public function new()
@@ -143,7 +120,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 				checkboxGroup.add(checkbox);
 				optionText.xAdd += 80;
 			} else {
-				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 80, true, 0.8);
+				var valueText:AttachedText = new AttachedText(optionsArray[i].getValue(), optionText.width + 80, true, 0.8);
 				valueText.sprTracker = optionText;
 				valueText.copyAlpha = true;
 				valueText.ID = i;
@@ -155,11 +132,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		changeSelection();
 		reloadCheckboxes();
-
-                #if android
-                addVirtualPad(FULL, A_B_C);
-                addPadCamera();
-                #end
 	}
 
 	var nextAccept:Int = 5;
@@ -177,12 +149,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		}
 
 		if (controls.BACK) {
-			#if android
-                        FlxTransitionableState.skipNextTransOut = true;
-			FlxG.resetState();
-                        #else
-                        close();
-                        #end
+			close();
 			ClientPrefs.saveSettings();
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
@@ -245,26 +212,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 									curOption.curOption = num;
 									curOption.setValue(curOption.options[num]); //lol
-									
-									if (curOption.name == "Scroll Type")
-									{
-										var oOption:GameplayOption = getOptionByName("Scroll Speed");
-										if (oOption != null)
-										{
-											if (curOption.getValue() == "constant")
-											{
-												oOption.displayFormat = "%v";
-												oOption.maxValue = 6;
-											}
-											else
-											{
-												oOption.displayFormat = "%vX";
-												oOption.maxValue = 3;
-												if(oOption.getValue() > 3) oOption.setValue(3);
-											}
-											updateTextFrom(oOption);
-										}
-									}
 									//trace(curOption.options[num]);
 							}
 							updateTextFrom(curOption);
@@ -296,7 +243,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 				}
 			}
 
-			if(controls.RESET #if android || _virtualpad.buttonC.justPressed #end)
+			if(controls.RESET)
 			{
 				for (i in 0...optionsArray.length)
 				{
@@ -307,17 +254,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 						if(leOption.type == 'string')
 						{
 							leOption.curOption = leOption.options.indexOf(leOption.getValue());
-						}
-						updateTextFrom(leOption);
-					}
-
-					if(leOption.name == 'Scroll Speed')
-					{
-						leOption.displayFormat = "%vX";
-						leOption.maxValue = 3;
-						if(leOption.getValue() > 3)
-						{
-							leOption.setValue(3);
 						}
 						updateTextFrom(leOption);
 					}

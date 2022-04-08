@@ -14,37 +14,53 @@ import flixel.util.FlxColor;
 import lime.utils.Assets;
 import flixel.FlxSubState;
 import Achievements;
+import flixel.tweens.FlxTween;
+import flixel.addons.display.FlxBackdrop;
 
 using StringTools;
 
 class AchievementsMenuState extends MusicBeatState
 {
-	#if ACHIEVEMENTS_ALLOWED
+	var bg:FlxSprite;
+	var chess:FlxBackdrop;
+	var overlay:FlxSprite;
+
 	var options:Array<String> = [];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	private var achievementArray:Array<AttachedAchievement> = [];
 	private var achievementIndex:Array<Int> = [];
 	private var descText:FlxText;
+	
 
 	override function create() {
 		#if desktop
 		DiscordClient.changePresence("Achievements Menu", null);
 		#end
 
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBGBlue'));
-		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
-		menuBG.updateHitbox();
-		menuBG.screenCenter();
-		menuBG.antialiasing = ClientPrefs.globalAntialiasing;
-		add(menuBG);
+		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat3'));
+		add(bg);
+		
+
+		//chess
+		chess = new FlxBackdrop(Paths.image('fpbg'), 0, 0, true, false);
+		chess.y -= 80;
+		add(chess);
+		
+		chess.offset.x -= 0;
+		chess.offset.y += 0;
+		chess.velocity.x = 20;
+
+		overlay = new FlxSprite().loadGraphic(Paths.image('awaov'));
+		add(overlay);
+		overlay.alpha = 1;
+		
 
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
-		Achievements.loadAchievements();
 		for (i in 0...Achievements.achievementsStuff.length) {
-			if(!Achievements.achievementsStuff[i][4] || Achievements.achievementsMap.exists(Achievements.achievementsStuff[i][2])) {
+			if(!Achievements.achievementsStuff[i][3] || Achievements.achievementsMap.exists(Achievements.achievementsStuff[i][2])) {
 				options.push(Achievements.achievementsStuff[i]);
 				achievementIndex.push(i);
 			}
@@ -71,10 +87,6 @@ class AchievementsMenuState extends MusicBeatState
 		descText.borderSize = 2.4;
 		add(descText);
 		changeSelection();
-
-                #if android
-	        addVirtualPad(UP_DOWN, B);
-                #end
 
 		super.create();
 	}
@@ -121,7 +133,5 @@ class AchievementsMenuState extends MusicBeatState
 			}
 		}
 		descText.text = Achievements.achievementsStuff[achievementIndex[curSelected]][1];
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
-	#end
 }
